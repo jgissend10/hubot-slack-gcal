@@ -2,9 +2,7 @@
 //   Commands for interfacing with google calendar.
 //
 // Commands:
-//   hubot what <room>s are available - finds rooms of type <room> available for the next hour
 //   hubot create an event <event> - creates an event with the given quick add text
-//   hubot reserve me <room> for <event> - creates an event with the given quick add text and invites the given room
 //   hubot invite <usernames> - invite the given usernames to the last event
 //   hubot reply <yes|no|maybe> - reply to the last event
 
@@ -30,10 +28,11 @@ module.exports = function(robot) {
   function getPrimaryCalendar(oauth, cb) {
     googleapis
       .calendar('v3')
-      .calendarList.get({calendarId: 'primary', auth: oauth}, function(err, data) {
-        console.warn("data looks like: " + data);
+      .calendarList.list({minAccessRole: 'owner', auth: oauth}, function(err, data) {
         if(err) return cb(err);
-        return data;
+        cb(undefined, _.find(data.items, function(c) {
+          return c.primary;
+        }));
       });
   }
 
@@ -41,55 +40,55 @@ module.exports = function(robot) {
     user.last_event = event.id;
   });
 
-  robot.respond(/(which|what|are any|are there any) (.+)s (are )?(available|free|open)/i, function(msg) {
-    robot.emit('google:authenticate', msg, function(err, oauth) {
-      var group_name = msg.match[2],
-          group = groups[group_name],
-          startTime = new Date().toISOString(),
-          endTime = new Date();
-      endTime.setHours(endTime.getHours()+1);
-      endTime = endTime.toISOString();
-      if(group) {
-        var req = googleapis.calendar('v3').freebusy.query({ auth: oauth, resource: { items: _.map(_.keys(group), function(g) { return { id: g } }), timeMin: startTime, timeMax: endTime } }, function (err, availability) {
-          if(err) { msg.reply("Error getting calendar availability"); return console.log(err); }
-          var available = [];
-          _.each(availability.calendars, function(c, id) {
-            if(!c.errors && c.busy.length == 0) {
-              available.push(group[id][0]);
-            }
-          });
-          if(available.length == 0) return msg.send("There are no " + group_name + "s available in the next hour");
-          msg.send("These " + group_name + "s are free for the next hour:\n" + available.join("\n"));
-        });
-      } else {
-        msg.reply("I don't know anything about " + group_name);
-      }
-    });
-  });
+  // robot.respond(/(which|what|are any|are there any) (.+)s (are )?(available|free|open)/i, function(msg) {
+    // robot.emit('google:authenticate', msg, function(err, oauth) {
+      // var group_name = msg.match[2],
+          // group = groups[group_name],
+          // startTime = new Date().toISOString(),
+          // endTime = new Date();
+      // endTime.setHours(endTime.getHours()+1);
+      // endTime = endTime.toISOString();
+      // if(group) {
+        // var req = googleapis.calendar('v3').freebusy.query({ auth: oauth, resource: { items: _.map(_.keys(group), function(g) { return { id: g } }), timeMin: startTime, timeMax: endTime } }, function (err, availability) {
+          // if(err) { msg.reply("Error getting calendar availability"); return console.log(err); }
+          // var available = [];
+          // _.each(availability.calendars, function(c, id) {
+            // if(!c.errors && c.busy.length == 0) {
+              // available.push(group[id][0]);
+            // }
+          // });
+          // if(available.length == 0) return msg.send("There are no " + group_name + "s available in the next hour");
+          // msg.send("These " + group_name + "s are free for the next hour:\n" + available.join("\n"));
+        // });
+      // } else {
+        // msg.reply("I don't know anything about " + group_name);
+      // }
+    // });
+  // });
 
-  robot.respond(/(book|reserve) (me )?(.+) for (.+)/i, function(msg) {
-    robot.emit('google:authenticate', msg, function(err, oauth) {
-      getPrimaryCalendar(oauth, function(err, calendar) {
-        if(err || !calendar) return msg.reply("Could not find your primary calendar");
-        var room_name = msg.match[3].toLowerCase(), room;
-        _.each(groups, function(group) {
-          _.each(group, function(room_names, id) {
-            if(_.contains(room_names, room_name)) room = id;
-          });
-        });
-        if(!room) return msg.reply("I don't know what " + room_name + " is");
-        googleapis.calendar('v3').events.quickAdd({ auth: oauth, calendarId: calendar.id, text: msg.match[4] }, function(err, event) {
-          if(err || !event) { msg.reply("Error creating event"); return console.log(err); }
-          googleapis.calendar('v3').events.patch({ auth: oauth, calendarId: calendar.id, eventId: event.id, resource: { attendees: [ { email: room } ] } }, function(err, event) {
-            if(err || !event) return msg.reply("Error reserving room");
-            reply_with_new_event(msg, event, "OK, I reserved " + room_name + " for you:");
-            msg.message.user.last_event = event.id;
-            msg.message.user.last_event_calendar = calendar.id;
-          });
-        });
-      });
-    });
-  });
+  // robot.respond(/(book|reserve) (me )?(.+) for (.+)/i, function(msg) {
+    // robot.emit('google:authenticate', msg, function(err, oauth) {
+      // getPrimaryCalendar(oauth, function(err, calendar) {
+        // if(err || !calendar) return msg.reply("Could not find your primary calendar");
+        // var room_name = msg.match[3].toLowerCase(), room;
+        // _.each(groups, function(group) {
+          // _.each(group, function(room_names, id) {
+            // if(_.contains(room_names, room_name)) room = id;
+          // });
+        // });
+        // if(!room) return msg.reply("I don't know what " + room_name + " is");
+        // googleapis.calendar('v3').events.quickAdd({ auth: oauth, calendarId: calendar.id, text: msg.match[4] }, function(err, event) {
+          // if(err || !event) { msg.reply("Error creating event"); return console.log(err); }
+          // googleapis.calendar('v3').events.patch({ auth: oauth, calendarId: calendar.id, eventId: event.id, resource: { attendees: [ { email: room } ] } }, function(err, event) {
+            // if(err || !event) return msg.reply("Error reserving room");
+            // reply_with_new_event(msg, event, "OK, I reserved " + room_name + " for you:");
+            // msg.message.user.last_event = event.id;
+            // msg.message.user.last_event_calendar = calendar.id;
+          // });
+        // });
+      // });
+    // });
+  // });
 
   robot.respond(/create(me )?( an)? event (.*)/i, function(msg) {
     robot.emit('google:authenticate', msg, function(err, oauth) {
