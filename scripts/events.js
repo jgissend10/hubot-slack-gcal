@@ -30,13 +30,10 @@ module.exports = function(robot) {
   function getPrimaryCalendar(oauth, cb) {
     googleapis
       .calendar('v3')
-      .calendarList.list({minAccessRole: 'owner', auth: oauth}, function(err, data) {
+      .calendarList.get({calendarId: 'primary', auth: oauth}, function(err, data) {
         console.warn("data looks like: " + data);
-        console.warn("items looks like: " + data.items);
         if(err) return cb(err);
-        cb(undefined, _.find(data.items, function(c) {
-          return c.primary;
-        }));
+        return data;
       });
   }
 
