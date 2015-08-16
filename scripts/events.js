@@ -21,7 +21,7 @@ module.exports = function(robot) {
   } catch(e) {
     console.warn("Could not find calendar-resources.json file");
   }
-  
+
   function reply_with_new_event(msg, event, pretext) {
     var attachment = helpers.event_slack_attachment(event, pretext);
     robot.emit('slack.attachment', {channel: msg.message.room, attachments: [attachment]});
@@ -32,6 +32,8 @@ module.exports = function(robot) {
       .calendar('v3')
       .calendarList.list({minAccessRole: 'owner', auth: oauth}, function(err, data) {
         if(err) return cb(err);
+        console.log(data);
+        console.log(data.items);
         cb(undefined, _.find(data.items, function(c) {
           return c.primary;
         }));
