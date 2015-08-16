@@ -31,9 +31,9 @@ module.exports = function(robot) {
     googleapis
       .calendar('v3')
       .calendarList.list({minAccessRole: 'owner', auth: oauth}, function(err, data) {
+        console.warn("data looks like: " + data);
+        console.warn("items looks like: " + data.items);
         if(err) return cb(err);
-        console.log(data);
-        console.log(data.items);
         cb(undefined, _.find(data.items, function(c) {
           return c.primary;
         }));
