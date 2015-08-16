@@ -14,7 +14,7 @@
     "underscore": "1.7.0",
     "express": ">= 3.0.0 < 4.0.0",
     "node-uuid": "1.4.2",
-    "googleapis": "1.0.21",
+    "googleapis": "1.0.23",
     "moment": "^2.8.4",
     "twix": "^0.6.3"
   },
