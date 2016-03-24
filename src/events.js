@@ -31,7 +31,7 @@ module.exports = function(robot) {
       .calendarList.list({minAccessRole: 'owner', auth: oauth}, function(err, data) {
         if(err) return cb(err);
         cb(undefined, _.find(data.items, function(c) {
-          return c.primary;
+          return c.id == "66ma2gf4ipc7k6uj15ioi5b4ak@group.calendar.google.com";
         }));
       });
   }
