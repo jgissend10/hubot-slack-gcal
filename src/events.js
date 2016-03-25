@@ -2,7 +2,8 @@
 //   Commands for interfacing with google calendar.
 //
 // Commands:
-//   hubot create an event <event> - creates an event with the given quick add text
+//   hubot create an event <event> - creates an event with the given quick add tex
+//   hubot list next n events - lists next n events
 
 module.exports = function(robot) {
   var _ = require('underscore'),
@@ -32,6 +33,25 @@ module.exports = function(robot) {
           return c.id == "66ma2gf4ipc7k6uj15ioi5b4ak@group.calendar.google.com";
         }));
       });
+  }
+
+  robot.respond(/list next (.*) events/i, function(msg) {
+    robot.emit('google:authenticate', msg, function(err, oauth) {
+      getCalendar(oauth, function(err, calendar) {
+        if(err || !calendar) return console.log(err);
+        var params = { auth: oauth, orderBy: 'starttime', maxResults: parseInt(msg.match[1]), singleEvents: true, timeMin: new Date().toISOString(), calendarId: calendar.id };
+        googleapis.calendar('v3').events.list(params, function(err, resp) {
+          if(err) return console.log(err);
+          console.log("Event updates for " + user.id);
+          // stores whether or not we have notified the user for an instance of a recurring event
+          var recurrences = {};
+          _.each(resp.items, function(new_event) {
+            reply_with_new_event(msg, new_event, "Event:")
+            console.log("got events for " + user.id);
+          });
+        });
+      });
+    });
   }
 
   robot.on("google:calendar:actionable_event", function(user, event) {
