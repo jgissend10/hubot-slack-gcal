@@ -260,7 +260,7 @@ module.exports = function(robot) {
       });
   }
 
-  robot.respond(/enable calendar reminders/i, function(msg) {
+  /*robot.respond(/enable calendar reminders/i, function(msg) {
     robot.emit('google:authenticate', msg, function(err, oauth) {
       setup_calendar_watch(msg.message.user, function(err, res) {
         if(err) {
@@ -282,7 +282,7 @@ module.exports = function(robot) {
 
   robot.respond(/refresh calendar events/i, function(msg) {
     getEvents(msg.message.user);
-  });
+  });*/
 
   robot.router.use(app);
 
