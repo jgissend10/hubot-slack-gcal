@@ -52,7 +52,7 @@ module.exports = function(robot) {
         });
       });
     });
-  }
+  });
 
   robot.on("google:calendar:actionable_event", function(user, event) {
     user.last_event = event.id;
