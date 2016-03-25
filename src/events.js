@@ -14,18 +14,18 @@ module.exports = function(robot) {
       googleapis = require('googleapis');
 
   var groups = {};
-  try {
+  /*try {
     groups = JSON.parse(Fs.readFileSync("calendar-resources.json").toString());
   } catch(e) {
     console.warn("Could not find calendar-resources.json file");
-  }
+  }*/
 
   function reply_with_new_event(msg, event, pretext) {
     var attachment = helpers.event_slack_attachment(event, pretext);
-    robot.emit('slack.attachment', {channel: msg.message.room, attachments: [attachment]});
+    robot.emit('slack.attachment', {channel: msg.message.user.name, attachments: [attachment]});
   }
 
-  function getPrimaryCalendar(oauth, cb) {
+  function getCalendar(oauth, cb) {
     googleapis
       .calendar('v3')
       .calendarList.list({minAccessRole: 'owner', auth: oauth}, function(err, data) {
@@ -92,8 +92,8 @@ module.exports = function(robot) {
 
   robot.respond(/create(me )?( an)? event (.*)/i, function(msg) {
     robot.emit('google:authenticate', msg, function(err, oauth) {
-      getPrimaryCalendar(oauth, function(err, calendar) {
-        if(err || !calendar) return msg.reply("Could not find your primary calendar");
+      getCalendar(oauth, function(err, calendar) {
+        if(err || !calendar) return msg.reply("Could not find your calendar");
         googleapis
         .calendar('v3')
         .events.quickAdd({ auth: oauth, calendarId: calendar.id, text: msg.match[3] }, function(err, event) {
@@ -107,7 +107,7 @@ module.exports = function(robot) {
     });
   });
 
-  robot.respond(/invite (.*)/i, function(msg) {
+  /*robot.respond(/invite (.*)/i, function(msg) {
     robot.emit('google:authenticate', msg, function(err, oauth) {
       var event = msg.message.user.last_event;
       if(!event) return msg.reply('I dont know what event you\'re talking about!');
@@ -168,5 +168,5 @@ module.exports = function(robot) {
         });
       });
     });
-  });
+  });*/
 }
