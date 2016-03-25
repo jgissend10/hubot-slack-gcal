@@ -3,8 +3,6 @@
 //
 // Commands:
 //   hubot create an event <event> - creates an event with the given quick add text
-//   hubot invite <usernames> - invite the given usernames to the last event
-//   hubot reply <yes|no|maybe> - reply to the last event
 
 module.exports = function(robot) {
   var _ = require('underscore'),
