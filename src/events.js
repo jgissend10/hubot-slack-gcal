@@ -46,7 +46,7 @@ module.exports = function(robot) {
           // stores whether or not we have notified the user for an instance of a recurring event
           var recurrences = {};
           _.each(resp.items, function(new_event) {
-            reply_with_new_event(msg, new_event, "Event:")
+            reply_with_new_event(msg, new_event, "Event:");
             console.log("got events for " + user.id);
           });
         });
