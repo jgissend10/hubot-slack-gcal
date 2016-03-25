@@ -89,6 +89,7 @@ module.exports = function(robot) {
   // });
 
   robot.respond(/create(me )?( an)? event (.*)/i, function(msg) {
+    robot.emit('slack.attachment', {channel: msg.message.user.name, text: "I'm creating your event."});
     robot.emit('google:authenticate', msg, function(err, oauth) {
       getCalendar(oauth, function(err, calendar) {
         if(err || !calendar) return msg.reply("Could not find your calendar");
