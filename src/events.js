@@ -52,6 +52,23 @@ module.exports = function(robot) {
     });
   });
 
+  robot.respond(/show next event/i, function(msg) {
+    robot.emit('google:authenticate', msg, function(err, oauth) {
+      getCalendar(oauth, function(err, calendar) {
+        if(err || !calendar) return console.log(err);
+        var params = { auth: oauth, orderBy: 'starttime', maxResults: 1, singleEvents: true, timeMin: new Date().toISOString(), calendarId: calendar.id };
+        googleapis.calendar('v3').events.list(params, function(err, resp) {
+          if(err) return console.log(err);
+          // stores whether or not we have notified the user for an instance of a recurring event
+          var recurrences = {};
+          _.each(resp.items, function(new_event) {
+            reply_with_new_event(msg, new_event, "Event:");
+          });
+        });
+      });
+    });
+  });
+
   robot.on("google:calendar:actionable_event", function(user, event) {
     user.last_event = event.id;
   });
