@@ -39,7 +39,11 @@ module.exports = function(robot) {
     robot.emit('google:authenticate', msg, function(err, oauth) {
       getCalendar(oauth, function(err, calendar) {
         if(err || !calendar) return console.log(err);
-        var params = { auth: oauth, orderBy: 'starttime', maxResults: parseInt(msg.match[1]), singleEvents: true, timeMin: new Date().toISOString(), calendarId: calendar.id };
+        var num = parseInt(msg.match[1]);
+        if (num > 10) {
+          num = 10;
+        }
+        var params = { auth: oauth, orderBy: 'starttime', maxResults: num, singleEvents: true, timeMin: new Date().toISOString(), calendarId: calendar.id };
         googleapis.calendar('v3').events.list(params, function(err, resp) {
           if(err) return console.log(err);
           // stores whether or not we have notified the user for an instance of a recurring event
