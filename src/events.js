@@ -73,6 +73,16 @@ module.exports = function(robot) {
     });
   });
 
+  robot.respond(/keep calendar alive/i, function(msg) {
+    setInterval(
+    robot.emit('google:authenticate', msg, function(err, oauth) {
+      getCalendar(oauth, function(err, calendar) {
+        if(err || !calendar) return console.log(err);
+        console.log("Keep Alive");
+      });
+    }), 1000*3600);
+  });
+
   robot.on("google:calendar:actionable_event", function(user, event) {
     user.last_event = event.id;
   });
